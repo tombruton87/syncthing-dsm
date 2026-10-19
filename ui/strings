@@ -1,0 +1,3 @@
+pairing="{0} (device {1}…) wants to sync with this Synology. Open Syncthing from the main menu → Devices to accept or ignore it."
+outofsync="The Syncthing folder {0} has been out of sync for more than 30 minutes. Open Syncthing from the main menu → Folders to see why."
+conflicts="Syncthing made {0} new conflicting copies of files (two devices changed the same file), for example in {1}. Open Syncthing from the main menu → Conflicts to choose which version to keep."

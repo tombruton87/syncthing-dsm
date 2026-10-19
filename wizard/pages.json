@@ -1,0 +1,17 @@
+, {
+    "step_title": "Syncthing",
+    "items": [{
+        "type": "textfield",
+        "desc": "Your devices sync with this Synology on this port, TCP and UDP. Syncthing's usual port is 22000; suggested: one nothing here is using.$(in_use 21027 && echo " <b>UDP port 21027, for local discovery, is in use on this Synology</b> (another Syncthing?): devices on your network may not find this one by themselves — they can still add it by address.")",
+        "subitems": [
+            { "key": "wizard_sync_port", "desc": "Sync port", "defaultValue": "$(first_free 22000 22001 22010 22100)", "validator": { "allowBlank": false, "regex": { "expr": "$port_expr", "errorText": "A number from 1024 to 65535 that isn't in use on this Synology" } } }
+        ]
+    }, {
+        "type": "singleselect",
+        "desc": "Where your devices can reach this Synology. It can be changed later in the Syncthing window (Privacy &amp; network). The password for Syncthing's own web interface is made at the first start and shown in the window.",
+        "subitems": [
+            { "key": "wizard_privacy_anywhere", "desc": "Anywhere — at home and away (Syncthing's discovery servers and relays help devices find each other; everything is encrypted end to end)", "defaultValue": true },
+            { "key": "wizard_privacy_local", "desc": "Local network only — nothing leaves your network; devices sync when they're at home", "defaultValue": false }
+        ]
+    }]
+}

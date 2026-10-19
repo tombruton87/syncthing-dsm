@@ -1,0 +1,85 @@
+    <section data-page="devices" hidden>
+      <div class="card"><h2>This Synology</h2><div class="in"><div class="me">
+        <img id="me-qr" alt="QR code of this Synology's device ID" hidden>
+        <div class="txt">
+          <p><b id="me-name"></b> <span class="muted small">— its device ID:</span></p>
+          <p><span class="devid" id="me-id">…</span> <button class="btn" id="me-copy">Copy</button></p>
+          <p class="muted small">Pair a device with it: in the Syncthing app on a phone, <b>Devices → +</b> and scan this code; on a computer, Syncthing's <b>Add Remote Device</b> with this ID. Then accept it below when it asks.</p>
+          <p class="muted small" id="me-addr"></p>
+        </div></div></div></div>
+      <div class="card" id="pd-card" hidden><h2>Asking to connect</h2><div class="in"><p class="muted small">These devices have this Synology's ID and want to sync with it. Accept the ones you know; ignored ones aren't shown again.</p></div>
+        <table><thead><tr><th>Device</th><th>From</th><th>Asked</th><th>Name it</th><th class="n"></th></tr></thead><tbody id="pd-rows"></tbody></table></div>
+      <div class="card"><h2>Devices</h2><table><thead><tr><th>Device</th><th>Status</th><th>Address</th><th class="n">Down / up</th><th>In sync</th><th class="n"></th></tr></thead><tbody id="dv-rows"></tbody></table></div>
+      <div class="card"><h2>Add a device by its ID</h2><div class="in">
+        <div class="row3">
+          <label class="f"><span>Device ID</span><input type="text" id="ad-id" placeholder="ABCDEFG-HIJKLMN-… (Syncthing on that device: Actions → Show ID)" autocomplete="off"></label>
+          <label class="f" style="flex:0 1 220px"><span>Name</span><input type="text" id="ad-name" placeholder="Alice's laptop" maxlength="60"></label>
+        </div>
+        <label class="f" style="margin-top:10px"><span>Address (optional)</span><input type="text" id="ad-addr" placeholder="empty: found by itself — or tcp://192.168.1.30:22000"></label>
+        <button class="btn primary" id="ad-add" data-app>Add the device</button>
+        <p class="muted small">It connects once this Synology is added on that device too (or it accepts this one).</p></div></div>
+      <p class="muted small" id="ig-devs"></p>
+    </section>
+
+    <section data-page="folders" hidden>
+      <div class="note warn" id="fd-errs" hidden></div>
+      <div class="card" id="pf-card" hidden><h2>Offered by other devices</h2><div class="in"><p class="muted small">A paired device shares these folders with this Synology. Accept one into a shared folder here: it's synced into a folder of that name inside it (made if it isn't there yet).</p></div>
+        <table><tbody id="pf-rows"></tbody></table></div>
+      <div id="fd-list"></div>
+      <div class="card"><h2>Add a folder</h2><div class="in">
+        <p class="muted small">Sync a shared folder of this Synology (or a folder inside one) with your devices. Syncthing runs as the package's own user, <b>syncthing</b>: it needs Read/Write on the shared folder (shown beside each one below).</p>
+        <div class="row3">
+          <label class="f"><span>Name</span><input type="text" id="af-label" placeholder="Photos" maxlength="100"></label>
+          <label class="f"><span>Shared folder</span><select id="af-share"></select></label>
+          <label class="f"><span>Folder inside it (optional)</span><input type="text" id="af-sub" placeholder="e.g. Phone — made if it isn't there"></label>
+        </div>
+        <p id="af-access" class="small"></p>
+        <label class="f" id="af-path-wrap" hidden><span>Folder path</span><input type="text" id="af-path" placeholder="/volume1/photos"></label>
+        <div class="row3">
+          <label class="f"><span>Type</span><select id="af-type"><option value="sendreceive">Send &amp; receive</option><option value="sendonly">Send only — this Synology is the source</option><option value="receiveonly">Receive only — a copy of the other devices</option></select></label>
+          <label class="f"><span>File versioning</span><select id="af-vtype" class="vtype"><option value="none">Off</option><option value="trashcan" selected>Trash can — deleted and replaced files kept</option><option value="simple">Simple — the last N versions of each file</option><option value="staggered">Staggered — fewer old versions as they age</option></select></label>
+          <label class="f vkeep"><span>Versions to keep</span><input type="number" id="af-vkeep" min="1" max="999" value="5"></label>
+          <label class="f vdays"><span>Keep for (days, 0 = always)</span><input type="number" id="af-vdays" min="0" max="3650" value="30"></label>
+        </div>
+        <p style="margin:10px 0 2px" class="small">Share with</p><div class="checks" id="af-devs"></div>
+        <details><summary>Ignore patterns</summary><p class="muted small">Files Syncthing leaves alone, one pattern per line. Pre-filled with what a Synology and other computers leave in folders: DSM's thumbnails (<code>@eaDir</code>), recycle bins and snapshots, Mac and Windows files, Synology Drive's working folder. <code>(?d)</code> lets Syncthing delete them when their folder is deleted elsewhere.</p>
+          <textarea id="af-ign" spellcheck="false"></textarea></details>
+        <p><button class="btn primary" id="af-add" data-app>Add the folder</button></p></div></div>
+    </section>
+
+    <section data-page="conflicts" hidden>
+      <div class="note">When two devices change the same file before they sync, Syncthing keeps both: the newer change becomes the file, and the other is kept beside it as <code>name.sync-conflict-date-time-device.ext</code>. Here they are, by file. <b>Keep this version</b> puts the copy in place of the file (and syncs it everywhere); <b>Keep the original</b> deletes the copy.</div>
+      <div class="card"><h2>Conflicting copies<span class="right"><span class="muted small" id="cf-when"></span> <button class="btn" data-act="conflictscan">Look again now</button></span></h2>
+        <table><thead><tr><th>File</th><th>Changed on</th><th class="n">Size</th><th>Saved</th><th class="n"></th></tr></thead><tbody id="cf-rows"></tbody></table></div>
+    </section>
+
+    <section data-page="activity" hidden>
+      <div class="note">Files that changed in the synced folders — here on this Synology, or on another device and then brought here — as Syncthing reported them, newest first. Kept by the package: the last 400.</div>
+      <div class="card"><h2>Recent changes<span class="right"><select id="ac-folder" style="max-width:220px"><option value="">All folders</option></select></span></h2>
+        <table><thead><tr><th>When</th><th>What</th><th>File</th><th>Folder</th><th>From</th></tr></thead><tbody id="ac-rows"></tbody></table></div>
+    </section>
+
+    <section data-page="privacy" hidden>
+      <div class="card"><h2>Where your devices can reach this Synology</h2><div class="in">
+        <div class="radio">
+          <label><input type="radio" name="pv-mode" value="anywhere"> <b>Anywhere</b> — at home and away</label>
+          <span class="sub">Devices find this Synology through Syncthing's global discovery servers and connect directly, through your router (NAT traversal) or, if nothing else works, through Syncthing's public relays. Everything is encrypted end to end; relays and discovery servers see that two devices talk, not what they sync.</span>
+          <label><input type="radio" name="pv-mode" value="local"> <b>Local network only</b></label>
+          <span class="sub">Nothing leaves your network: no global discovery, relays or NAT traversal, no usage reports. Devices sync only when they're at home, found by local discovery or by their address.</span>
+        </div>
+        <div class="row3" style="margin-top:12px">
+          <label class="f"><span>Upload limit (KiB/s, 0 = none)</span><input type="number" id="pv-send" min="0" max="9999999"></label>
+          <label class="f"><span>Download limit (KiB/s, 0 = none)</span><input type="number" id="pv-recv" min="0" max="9999999"></label>
+        </div>
+        <p><label><input type="checkbox" id="pv-lan"> Limit on the local network too (normally limits apply to devices outside it)</label></p>
+        <button class="btn primary" id="pv-save" data-app>Save</button></div></div>
+      <div class="card"><h2>Listening</h2><table><tbody id="pv-info"></tbody></table><div class="in">
+        <div class="row3"><label class="f" style="flex:0 1 200px"><span>Sync port (TCP and UDP)</span><input type="number" id="pv-port" min="1024" max="65535"></label>
+          <button class="btn" id="pv-port-save" data-app>Change the port</button></div>
+        <p class="muted small" id="pv-hint"></p></div></div>
+      <div class="card"><h2>Syncthing's web interface</h2><div class="in">
+        <p>Syncthing's own interface has everything this window doesn't. Sign in as <b>admin</b> with the password the package made: <a class="st-link" href="#" target="_blank" rel="noopener">open it</a>.</p>
+        <p class="row"><button class="btn" id="show-pw" data-app>Show password</button> <button class="btn" data-act="newpw" data-confirm="Make a new password for Syncthing's web interface? The old one stops working.">New password</button></p>
+        <div id="pw-box" hidden><p><span class="secret" id="pw-text"></span> <button class="btn" id="pw-copy">Copy</button> <button class="btn" id="pw-hide">Hide</button></p><p class="muted small" id="pw-when"></p></div>
+        <p class="muted small">Kept in the package's own folder, readable only by DSM administrators. Changed it in Syncthing's interface since? Then the one shown here no longer works — New password makes one that does.</p></div></div>
+    </section>

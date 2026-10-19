@@ -1,0 +1,86 @@
+# Syncthing, as the Synology package runs it: the compose project in the
+# syncthing shared folder. The setup container writes .env beside this.
+# Syncthing's settings, this Synology's device identity (certificate and key)
+# and its index live in the syncthing_config volume; backups go to the share.
+# The folders it syncs are your own shared folders, each mounted read-write at
+# its own path (/volume1/photos stays /volume1/photos), so Syncthing shows the
+# paths you know. Syncthing runs as the package's own user (PUID/PGID).
+#
+# On the NAS's own network (the default) the package adds compose.host.yaml on
+# top of this file, so local discovery finds devices on your network. The ports
+# below are used only on Docker's network; inside, Syncthing listens on the
+# same port numbers, so the addresses it announces are right in both.
+services:
+  server:
+    image: ${ST_IMAGE:-syncthing/syncthing:2.1.6}
+    container_name: syncthing-server
+    restart: unless-stopped
+    ports:
+      # Syncthing's web interface (the GUI and the REST API the package uses)
+      - "${HTTP_PORT:-8384}:${HTTP_PORT:-8384}/tcp"
+      # Syncing with your devices: TCP and QUIC
+      - "${SYNC_PORT:-22000}:${SYNC_PORT:-22000}/tcp"
+      - "${SYNC_PORT:-22000}:${SYNC_PORT:-22000}/udp"
+    volumes:
+      - config:/var/syncthing
+      # Places for synced shared folders, filled from the window (Folders), each mounted
+      # read-write at its own path. A shared folder is never created if it's missing:
+      # its place gets an empty placeholder from this shared folder until it's there.
+      - type: bind
+        source: ${PLACE_1_SRC:-./no-folder}
+        target: ${PLACE_1_DST:-/no-folder/1}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_2_SRC:-./no-folder}
+        target: ${PLACE_2_DST:-/no-folder/2}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_3_SRC:-./no-folder}
+        target: ${PLACE_3_DST:-/no-folder/3}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_4_SRC:-./no-folder}
+        target: ${PLACE_4_DST:-/no-folder/4}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_5_SRC:-./no-folder}
+        target: ${PLACE_5_DST:-/no-folder/5}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_6_SRC:-./no-folder}
+        target: ${PLACE_6_DST:-/no-folder/6}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_7_SRC:-./no-folder}
+        target: ${PLACE_7_DST:-/no-folder/7}
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${PLACE_8_SRC:-./no-folder}
+        target: ${PLACE_8_DST:-/no-folder/8}
+        bind:
+          create_host_path: false
+    environment:
+      TZ: ${TZ:-UTC}
+      PUID: ${HOST_UID:-1000}
+      PGID: ${HOST_GID:-1000}
+      STGUIADDRESS: 0.0.0.0:${HTTP_PORT:-8384}
+      # The package's own key for Syncthing's REST API (kept in the root-only .env)
+      STGUIAPIKEY: ${ST_APIKEY:-}
+      # No "Default Folder" in the volume: folders are your shared folders, added in the window
+      STNODEFAULTFOLDER: "1"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -m 5 http://127.0.0.1:${HTTP_PORT:-8384}/rest/noauth/health | grep -q OK"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  config:
